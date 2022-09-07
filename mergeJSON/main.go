@@ -14,24 +14,23 @@ var id = InitialId
 
 const (
 	BaseYear    = 2021
-	InitialId   = 100001
-	IdIncrement = 100000
+	InitialId   = 10001
+	IdIncrement = 10000
 )
 
 func readJSON() map[int][]models.RakutanPDF {
 	rakutanPDFs := map[int][]models.RakutanPDF{}
 	for _, year := range YEAR {
 		data, err := ioutil.ReadFile(fmt.Sprintf("../parsePDF/export/%d.json", year))
-		//fmt.Printf(string(data))
 		if err != nil {
 			fmt.Errorf("failed to read file: %v", err)
 		}
+
 		var rakutanPDF []models.RakutanPDF
 		err = json.Unmarshal(data, &rakutanPDF)
 		if err != nil {
 			fmt.Errorf("failed to unmarshal: %v", err)
 		}
-
 		rakutanPDFs[year] = rakutanPDF
 	}
 	return rakutanPDFs
@@ -66,7 +65,7 @@ func main() {
 	//var rakutanEntries []models.RakutanEntry
 	rakutanPDFs := readJSON()
 
-	// Prepare rakutanEntryMap for merging
+	// Merge rakutanPDFs into rakutanEntries
 	rakutanEntryMap := make(map[string]models.RakutanEntry)
 	for _, year := range YEAR {
 		id = InitialId + IdIncrement*(BaseYear-year)
@@ -95,9 +94,8 @@ func main() {
 
 	fmt.Println(len(rakutanEntryMap))
 	fmt.Println(rakutanEntryMap["国際高等教育院:イノベーションと情報"])
-	//fmt.Println(rakutanEntryMap)
 	//for _, entry := range rakutanEntryMap {
-	//	if entry.ID > 400000 {
+	//	if entry.ID > 40000 {
 	//		fmt.Println(entry)
 	//	}
 	//}
