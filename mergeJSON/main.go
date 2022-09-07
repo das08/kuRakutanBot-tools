@@ -7,12 +7,15 @@ import (
 	"io/ioutil"
 )
 
-var YEAR = []int{2021}
+// YEAR MUST BE IN DESCENDING ORDER
+var YEAR = []int{2021, 2020, 2019, 2018}
+
+var id = InitialId
 
 const (
-	BASE_YEAR    = 2021
-	INITIAL_ID   = 100001
-	ID_INCREMENT = 100000
+	BaseYear    = 2021
+	InitialId   = 100001
+	IdIncrement = 100000
 )
 
 func readJSON() map[int][]models.RakutanPDF {
@@ -34,26 +37,69 @@ func readJSON() map[int][]models.RakutanPDF {
 	return rakutanPDFs
 }
 
+func initialize() models.RakutanEntry {
+	return models.RakutanEntry{
+		ID:            id,
+		FacultyName:   "",
+		LectureName:   "",
+		Omikuji:       models.Normal,
+		RegisterTotal: make([]models.NullInt, len(YEAR)),
+		PassedTotal:   make([]models.NullInt, len(YEAR)),
+		KakomonURL:    "",
+	}
+}
+
+func updateEntryTotal(entry *models.RakutanEntry, year int, r models.RakutanPDF) {
+	if entry.RegisterTotal[BaseYear-year].Valid {
+		entry.RegisterTotal[BaseYear-year].Int += r.RegisterTotal
+	} else {
+		entry.RegisterTotal[BaseYear-year] = models.NullInt{Int: r.RegisterTotal, Valid: true}
+	}
+	if entry.PassedTotal[BaseYear-year].Valid {
+		entry.PassedTotal[BaseYear-year].Int += r.PassedTotal
+	} else {
+		entry.PassedTotal[BaseYear-year] = models.NullInt{Int: r.PassedTotal, Valid: true}
+	}
+}
+
 func main() {
 	//var rakutanEntries []models.RakutanEntry
 	rakutanPDFs := readJSON()
-	rakutanPDFMap := make(map[string]models.RakutanPDF)
-	for year, rakutanPDF := range rakutanPDFs {
-		for _, r := range rakutanPDF {
-			key := fmt.Sprintf("%d:%s:%s", year, r.Faculty, r.LectureName)
 
+	// Prepare rakutanEntryMap for merging
+	rakutanEntryMap := make(map[string]models.RakutanEntry)
+	for _, year := range YEAR {
+		id = InitialId + IdIncrement*(BaseYear-year)
+
+		for _, r := range rakutanPDFs[year] {
+			// Key is a combination of faculty name and lecture name since there are multiple entries
+			// for the same lecture with different faculty name
+			key := fmt.Sprintf("%s:%s", r.Faculty, r.LectureName)
+
+			var entry models.RakutanEntry
 			// If the key is already in the map, accumulate the register and passed total
-			if old, ok := rakutanPDFMap[key]; ok {
-				r = models.RakutanPDF{
-					Faculty:       r.Faculty,
-					LectureName:   r.LectureName,
-					RegisterTotal: old.RegisterTotal + r.RegisterTotal,
-					PassedTotal:   old.PassedTotal + r.PassedTotal,
-				}
+			if old, ok := rakutanEntryMap[key]; ok {
+				entry = old
+				updateEntryTotal(&entry, year, r)
+			} else {
+				entry = initialize()
+				entry.FacultyName = r.Faculty
+				entry.LectureName = r.LectureName
+				entry.RegisterTotal[BaseYear-year] = models.NullInt{Int: r.RegisterTotal, Valid: true}
+				entry.PassedTotal[BaseYear-year] = models.NullInt{Int: r.PassedTotal, Valid: true}
+				id += 1
 			}
-			rakutanPDFMap[key] = r
+			rakutanEntryMap[key] = entry
 		}
 	}
-	fmt.Println(len(rakutanPDFMap))
-	fmt.Println(rakutanPDFMap["2021:情報学研究科:研究論文"])
+
+	fmt.Println(len(rakutanEntryMap))
+	fmt.Println(rakutanEntryMap["国際高等教育院:イノベーションと情報"])
+	//fmt.Println(rakutanEntryMap)
+	//for _, entry := range rakutanEntryMap {
+	//	if entry.ID > 400000 {
+	//		fmt.Println(entry)
+	//	}
+	//}
+
 }
