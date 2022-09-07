@@ -78,15 +78,15 @@ func formatter(text string) string {
 	return text
 }
 
-func readPdf2(path string) ([]models.RakutanInfo, error) {
+func readPdf2(path string) ([]models.RakutanPDF, error) {
 	f, r, err := pdf.Open(path)
 	defer f.Close()
 	if err != nil {
-		return []models.RakutanInfo{}, err
+		return []models.RakutanPDF{}, err
 	}
 	totalPage := r.NumPage()
 
-	var rakutanInfos []models.RakutanInfo
+	var rakutanInfos []models.RakutanPDF
 
 	for pageIndex := 1; pageIndex <= totalPage; pageIndex++ {
 		p := r.Page(pageIndex)
@@ -94,7 +94,7 @@ func readPdf2(path string) ([]models.RakutanInfo, error) {
 			continue
 		}
 
-		rakutanInfo := models.RakutanInfo{}
+		rakutanInfo := models.RakutanPDF{}
 		var _facultyName, _lectureName, _regStr, _passStr string
 		var ok bool
 
@@ -109,7 +109,7 @@ func readPdf2(path string) ([]models.RakutanInfo, error) {
 			// and reset rakutanInfo
 			if ok && _passStr == "" && (rakutanInfo.Faculty != "" || rakutanInfo.LectureName != "") {
 				rakutanInfos = append(rakutanInfos, rakutanInfo)
-				rakutanInfo = models.RakutanInfo{}
+				rakutanInfo = models.RakutanPDF{}
 			}
 		}
 	}
