@@ -1,10 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/das08/pdf2text"
 	"golang.org/x/text/width"
+	"io/ioutil"
 	"strings"
+)
+
+const (
+	YEAR = 2021
 )
 
 type RakutanInfo struct {
@@ -19,7 +25,7 @@ func (r *RakutanInfo) Print() {
 }
 
 func main() {
-	content, err := readPdf2("pdf/2021.pdf")
+	content, err := readPdf2(fmt.Sprintf("pdf/%d.pdf", YEAR))
 	if err != nil {
 		panic(err)
 	}
@@ -57,6 +63,7 @@ func getText(validator func(pdf.Text) bool, text pdf.Text, init string, dest *st
 	return init, false
 }
 
+// formatter formats the text
 func formatter(text string) string {
 	text = strings.ReplaceAll(text, "�", "")
 	text = strings.TrimSpace(text)
@@ -103,5 +110,7 @@ func readPdf2(path string) (string, error) {
 	for _, r := range rakutanInfos {
 		r.Print()
 	}
+	file, _ := json.MarshalIndent(rakutanInfos, "", " ")
+	_ = ioutil.WriteFile(fmt.Sprintf("export/%d.json", YEAR), file, 0644)
 	return "", nil
 }
