@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/das08/pdf2text"
+	"golang.org/x/text/width"
 	"strings"
 )
 
@@ -48,13 +49,19 @@ func getText(validator func(pdf.Text) bool, text pdf.Text, init string, dest *st
 	if validator(text) {
 		init = init + text.S
 	} else if init != "" {
-		// If the text is the last one of the sentence, trim text
-		init = strings.TrimSpace(init)
-		init = strings.ReplaceAll(init, "�", "")
-		*dest = init
+		// If the text is the last one of the sentence, format text
+		formatted := formatter(init)
+		*dest = formatted
 		return "", true
 	}
 	return init, false
+}
+
+func formatter(text string) string {
+	text = strings.ReplaceAll(text, "�", "")
+	text = strings.TrimSpace(text)
+	text = width.Fold.String(text)
+	return text
 }
 
 func readPdf2(path string) (string, error) {
