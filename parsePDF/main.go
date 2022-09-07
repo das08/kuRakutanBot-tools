@@ -6,6 +6,7 @@ import (
 	"github.com/das08/pdf2text"
 	"golang.org/x/text/width"
 	"io/ioutil"
+	"strconv"
 	"strings"
 )
 
@@ -16,12 +17,12 @@ const (
 type RakutanInfo struct {
 	Faculty       string `json:"faculty"`
 	LectureName   string `json:"lecture_name"`
-	RegisterTotal string `json:"register_total"`
-	PassedTotal   string `json:"passed_total"`
+	RegisterTotal int    `json:"register_total"`
+	PassedTotal   int    `json:"passed_total"`
 }
 
 func (r *RakutanInfo) Print() {
-	fmt.Printf("FN: %s, LN: %s, RT: %s, PT: %s \n", r.Faculty, r.LectureName, r.RegisterTotal, r.PassedTotal)
+	fmt.Printf("FN: %s, LN: %s, RT: %d, PT: %d \n", r.Faculty, r.LectureName, r.RegisterTotal, r.PassedTotal)
 }
 
 func main() {
@@ -29,7 +30,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(content)
+	for _, r := range content {
+		r.Print()
+	}
+	file, _ := json.MarshalIndent(content, "", " ")
+	_ = ioutil.WriteFile(fmt.Sprintf("export/%d.json", YEAR), file, 0644)
 	return
 }
 
@@ -51,13 +56,19 @@ func isPassedTotal(text pdf.Text) bool {
 
 // getText returns the appended text and a boolean value indicating whether the text is the last one of the sentence.
 // If the text is the last one of the sentence, the text is assigned to `dest` and the return text is set to "".
-func getText(validator func(pdf.Text) bool, text pdf.Text, init string, dest *string) (string, bool) {
+func getText[T *string | *int](validator func(pdf.Text) bool, text pdf.Text, init string, dest T) (string, bool) {
 	if validator(text) {
 		init = init + text.S
 	} else if init != "" {
 		// If the text is the last one of the sentence, format text
 		formatted := formatter(init)
-		*dest = formatted
+
+		switch p := any(dest).(type) {
+		case *string:
+			*p = formatted
+		case *int:
+			*p, _ = strconv.Atoi(formatted)
+		}
 		return "", true
 	}
 	return init, false
@@ -71,11 +82,11 @@ func formatter(text string) string {
 	return text
 }
 
-func readPdf2(path string) (string, error) {
+func readPdf2(path string) ([]RakutanInfo, error) {
 	f, r, err := pdf.Open(path)
 	defer f.Close()
 	if err != nil {
-		return "", err
+		return []RakutanInfo{}, err
 	}
 	totalPage := 150
 
@@ -107,10 +118,5 @@ func readPdf2(path string) (string, error) {
 		}
 	}
 
-	for _, r := range rakutanInfos {
-		r.Print()
-	}
-	file, _ := json.MarshalIndent(rakutanInfos, "", " ")
-	_ = ioutil.WriteFile(fmt.Sprintf("export/%d.json", YEAR), file, 0644)
-	return "", nil
+	return rakutanInfos, nil
 }
