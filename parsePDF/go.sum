@@ -1,6 +1,0 @@
-github.com/das08/pdf2text v0.0.0-20220302134840-0c2507a12d80 h1:Z1u1gEoM/sV8ILADqcarY4hDrtC175khHTeKX1awc6E=
-github.com/das08/pdf2text v0.0.0-20220302134840-0c2507a12d80/go.mod h1:ESOmIYH/cr7BzPnOXJAHn6u/rFrv9mRT4cMSdfitIts=
-github.com/goccy/go-json v0.9.11 h1:/pAaQDLHEoCq/5FFmSKBswWmK6H0e8g4159Kc/X/nqk=
-github.com/goccy/go-json v0.9.11/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
-golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
-golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
