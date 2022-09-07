@@ -36,8 +36,8 @@ func readJSON() map[int][]models.RakutanPDF {
 	return rakutanPDFs
 }
 
-func initialize() models.RakutanEntry {
-	return models.RakutanEntry{
+func initialize() *models.RakutanEntry {
+	return &models.RakutanEntry{
 		ID:            id,
 		FacultyName:   "",
 		LectureName:   "",
@@ -61,12 +61,33 @@ func updateEntryTotal(entry *models.RakutanEntry, year int, r models.RakutanPDF)
 	}
 }
 
+func getLatestTotalCount(entry *models.RakutanEntry) (int, int) {
+	var latestRegisterCount, latestPassedCount, i, j int
+	var register, passed models.NullInt
+	for i, register = range entry.RegisterTotal {
+		if register.Valid {
+			latestRegisterCount = register.Int
+			break
+		}
+	}
+	for j, passed = range entry.PassedTotal {
+		if passed.Valid {
+			latestPassedCount = passed.Int
+			break
+		}
+	}
+	if i != j {
+		panic("i and j should be the same")
+	}
+	return latestRegisterCount, latestPassedCount
+}
+
 func main() {
 	//var rakutanEntries []models.RakutanEntry
 	rakutanPDFs := readJSON()
 
 	// Merge rakutanPDFs into rakutanEntries
-	rakutanEntryMap := make(map[string]models.RakutanEntry)
+	rakutanEntryMap := make(map[string]*models.RakutanEntry)
 	for _, year := range YEAR {
 		id = InitialId + IdIncrement*(BaseYear-year)
 
@@ -75,11 +96,11 @@ func main() {
 			// for the same lecture with different faculty name
 			key := fmt.Sprintf("%s:%s", r.Faculty, r.LectureName)
 
-			var entry models.RakutanEntry
+			var entry *models.RakutanEntry
 			// If the key is already in the map, accumulate the register and passed total
 			if old, ok := rakutanEntryMap[key]; ok {
 				entry = old
-				updateEntryTotal(&entry, year, r)
+				updateEntryTotal(entry, year, r)
 			} else {
 				entry = initialize()
 				entry.FacultyName = r.Faculty
@@ -92,8 +113,22 @@ func main() {
 		}
 	}
 
+	// Judge omikuji type
+	for key, entry := range rakutanEntryMap {
+		latestRegisterCount, latestPassedCount := getLatestTotalCount(entry)
+		//fmt.Printf("%s: %d, %d\n", entry.LectureName, latestRegisterCount, latestPassedCount)
+		if float64(latestRegisterCount)*0.76 <= float64(latestPassedCount) &&
+			latestRegisterCount > 12 && entry.FacultyName == "国際高等教育院" {
+			fmt.Printf("%s: %d, %d\n", entry.LectureName, latestRegisterCount, latestPassedCount)
+			rakutanEntryMap[key].Omikuji = models.Rakutan
+		}
+		if float64(latestRegisterCount)*0.31 >= float64(latestPassedCount) && latestRegisterCount > 4 {
+			rakutanEntryMap[key].Omikuji = models.Onitan
+		}
+	}
+
 	fmt.Println(len(rakutanEntryMap))
-	fmt.Println(rakutanEntryMap["国際高等教育院:イノベーションと情報"])
+	fmt.Println(*rakutanEntryMap["国際高等教育院:線形代数学A"])
 	//for _, entry := range rakutanEntryMap {
 	//	if entry.ID > 40000 {
 	//		fmt.Println(entry)
