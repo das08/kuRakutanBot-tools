@@ -114,5 +114,16 @@ func readPdf2(path string) ([]models.RakutanPDF, error) {
 		}
 	}
 
+	fmt.Println("Total RakutanInfo: ", len(rakutanInfos))
 	return rakutanInfos, nil
 }
+
+//Total RakutanInfo:  8824
+//processed year:  2018
+//Total RakutanInfo:  7248
+//processed year:  2019
+//Total RakutanInfo:  8733
+//processed year:  2020
+//Total RakutanInfo:  8704
+//processed year:  2021
+//Process Ended in: 19.644771s

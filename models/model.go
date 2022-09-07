@@ -18,10 +18,21 @@ func (r *RakutanPDF) Print() {
 }
 
 type RakutanEntry struct {
-	ID          NullInt `json:"id"`
-	FacultyName string  `json:"faculty_name"`
-	LectureName string  `json:"lecture_name"`
+	ID            NullInt     `json:"id"`
+	FacultyName   string      `json:"faculty_name"`
+	LectureName   string      `json:"lecture_name"`
+	Omikuji       OmikujiType `json:"omikuji_type"`
+	RegisterTotal []NullInt   `json:"register_total"`
+	PassedTotal   []NullInt   `json:"passed_total"`
+	KakomonURL    string      `json:"kakomon_url"`
 }
+
+type OmikujiType string
+
+const (
+	Rakutan OmikujiType = "rakutan"
+	Onitan  OmikujiType = "onitan"
+)
 
 var nullLiteral = []byte("null")
 
