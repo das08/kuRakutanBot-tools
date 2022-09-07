@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ledongthuc/pdf"
+	"github.com/das08/pdf2text"
 )
 
 func main() {
