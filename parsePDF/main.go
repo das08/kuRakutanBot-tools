@@ -1,9 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/das08/pdf2text"
+	"github.com/goccy/go-json"
 	"golang.org/x/text/width"
 	"io/ioutil"
 	"strconv"
