@@ -8,11 +8,10 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const (
-	YEAR = 2021
-)
+var YEAR = []int{2018, 2019, 2020, 2021}
 
 type RakutanInfo struct {
 	Faculty       string `json:"faculty"`
@@ -26,15 +25,22 @@ func (r *RakutanInfo) Print() {
 }
 
 func main() {
-	content, err := readPdf2(fmt.Sprintf("pdf/%d.pdf", YEAR))
-	if err != nil {
-		panic(err)
+	start := time.Now()
+	for _, year := range YEAR {
+		content, err := readPdf2(fmt.Sprintf("pdf/%d.pdf", year))
+		if err != nil {
+			panic(err)
+		}
+		//for _, r := range content {
+		//	r.Print()
+		//}
+		fmt.Println("processed year: ", year)
+		file, _ := json.MarshalIndent(content, "", " ")
+		_ = ioutil.WriteFile(fmt.Sprintf("export/%d.json", year), file, 0644)
 	}
-	for _, r := range content {
-		r.Print()
-	}
-	file, _ := json.MarshalIndent(content, "", " ")
-	_ = ioutil.WriteFile(fmt.Sprintf("export/%d.json", YEAR), file, 0644)
+
+	end := time.Now()
+	fmt.Printf("Process Ended in: %fs\n", (end.Sub(start)).Seconds())
 	return
 }
 
@@ -88,11 +94,11 @@ func readPdf2(path string) ([]RakutanInfo, error) {
 	if err != nil {
 		return []RakutanInfo{}, err
 	}
-	totalPage := 150
+	totalPage := r.NumPage()
 
 	var rakutanInfos []RakutanInfo
 
-	for pageIndex := totalPage; pageIndex <= totalPage; pageIndex++ {
+	for pageIndex := 1; pageIndex <= totalPage; pageIndex++ {
 		p := r.Page(pageIndex)
 		if p.V.IsNull() {
 			continue
@@ -111,7 +117,7 @@ func readPdf2(path string) ([]RakutanInfo, error) {
 
 			// If the text is the last one of the sentence, append rakutanInfo to rakutanInfos
 			// and reset rakutanInfo
-			if _passStr == "" && ok {
+			if ok && _passStr == "" && (rakutanInfo.Faculty != "" || rakutanInfo.LectureName != "") {
 				rakutanInfos = append(rakutanInfos, rakutanInfo)
 				rakutanInfo = RakutanInfo{}
 			}
