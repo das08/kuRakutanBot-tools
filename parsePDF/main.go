@@ -26,10 +26,6 @@ func main() {
 	return
 }
 
-func isSameSentence(text pdf.Text, lastTextStyle pdf.Text) bool {
-	return (text.Font == lastTextStyle.Font) && (text.FontSize == lastTextStyle.FontSize) && (text.X == lastTextStyle.X)
-}
-
 func isFacultyName(text pdf.Text) bool {
 	return text.X >= 19.500 && text.X <= 20.0
 }
@@ -46,10 +42,13 @@ func isPassedTotal(text pdf.Text) bool {
 	return text.X >= 470.0 && text.X <= 490.0
 }
 
+// getText returns the appended text and a boolean value indicating whether the text is the last one of the sentence.
+// If the text is the last one of the sentence, the text is assigned to `dest` and the return text is set to "".
 func getText(validator func(pdf.Text) bool, text pdf.Text, init string, dest *string) (string, bool) {
 	if validator(text) {
 		init = init + text.S
 	} else if init != "" {
+		// If the text is the last one of the sentence, trim text
 		init = strings.TrimSpace(init)
 		init = strings.ReplaceAll(init, "�", "")
 		*dest = init
@@ -60,7 +59,6 @@ func getText(validator func(pdf.Text) bool, text pdf.Text, init string, dest *st
 
 func readPdf2(path string) (string, error) {
 	f, r, err := pdf.Open(path)
-	// remember close file
 	defer f.Close()
 	if err != nil {
 		return "", err
@@ -74,9 +72,8 @@ func readPdf2(path string) (string, error) {
 		if p.V.IsNull() {
 			continue
 		}
-		var lastTextStyle pdf.Text
+
 		rakutanInfo := RakutanInfo{}
-		//var facultyName string
 		var _facultyName, _lectureName, _regStr, _passStr string
 		var ok bool
 
@@ -87,57 +84,15 @@ func readPdf2(path string) (string, error) {
 			_regStr, _ = getText(isRegisterTotal, text, _regStr, &rakutanInfo.RegisterTotal)
 			_passStr, ok = getText(isPassedTotal, text, _passStr, &rakutanInfo.PassedTotal)
 
-			//getText(isLectureName, text, _lectureName, "lecture_name")
-			//getText(isRegisterTotal, text, _regStr, "register_total")
-			//getText(isPassedTotal, text, _passStr, "passed_total")
-			//if isFacultyName(text) {
-			//	_facultyName = _facultyName + text.S
-			//	continue
-			//} else if _facultyName != "" {
-			//	fmt.Printf("Faculty: %s \n", _facultyName)
-			//	_facultyName = ""
-			//}
-
+			// If the text is the last one of the sentence, append rakutanInfo to rakutanInfos
+			// and reset rakutanInfo
 			if _passStr == "" && ok {
-				//fmt.Printf("Rakutan: %v \n", rakutanInfo)
 				rakutanInfos = append(rakutanInfos, rakutanInfo)
 				rakutanInfo = RakutanInfo{}
 			}
-
-			//if isLectureName(text) {
-			//	_lectureName = _lectureName + text.S
-			//	continue
-			//} else if _lectureName != "" {
-			//	fmt.Printf("Lecture: %s \n", _lectureName)
-			//	_lectureName = ""
-			//}
-			//
-			//if isRegisterTotal(text) {
-			//	_regStr = _regStr + text.S
-			//	continue
-			//} else if _regStr != "" {
-			//	fmt.Printf("Register: %s \n", _regStr)
-			//	_regStr = ""
-			//}
-			//
-			//if isPassedTotal(text) {
-			//	_passStr = _passStr + text.S
-			//	continue
-			//} else if _passStr != "" {
-			//	fmt.Printf("Passed: %s \n", _passStr)
-			//	_passStr = ""
-			//}
-
-			if isSameSentence(text, lastTextStyle) {
-				lastTextStyle.S = lastTextStyle.S + text.S
-			} else {
-				fmt.Printf("x: %f, y: %f, content: %s \n", lastTextStyle.X, lastTextStyle.Y, lastTextStyle.S)
-				lastTextStyle = text
-			}
 		}
-		//fmt.Printf("x: %f, y: %f, content: %s \n", lastTextStyle.X, lastTextStyle.Y, lastTextStyle.S)
-		//fmt.Printf("Faculty: %s \n", faculty)
 	}
+
 	for _, r := range rakutanInfos {
 		r.Print()
 	}
