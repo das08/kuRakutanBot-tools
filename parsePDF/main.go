@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/das08/kuRakutanBot-migration/models"
+	"github.com/das08/kuRakutanBot-tools/models"
 	"github.com/das08/pdf2text"
 	"github.com/goccy/go-json"
 	"golang.org/x/text/width"

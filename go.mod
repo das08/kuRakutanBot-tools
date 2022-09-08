@@ -1,4 +1,4 @@
-module github.com/das08/kuRakutanBot-migration
+module github.com/das08/kuRakutanBot-tools
 
 go 1.18
 
