@@ -41,7 +41,6 @@ func initialize() *models.RakutanEntry {
 		ID:            id,
 		FacultyName:   "",
 		LectureName:   "",
-		Omikuji:       models.Normal,
 		RegisterTotal: make([]models.NullInt, len(YEAR)),
 		PassedTotal:   make([]models.NullInt, len(YEAR)),
 		KakomonURL:    "",
@@ -59,27 +58,6 @@ func updateEntryTotal(entry *models.RakutanEntry, year int, r models.RakutanPDF)
 	} else {
 		entry.PassedTotal[BaseYear-year] = models.NullInt{Int: r.PassedTotal, Valid: true}
 	}
-}
-
-func getLatestTotalCount(entry *models.RakutanEntry) (int, int) {
-	var latestRegisterCount, latestPassedCount, i, j int
-	var register, passed models.NullInt
-	for i, register = range entry.RegisterTotal {
-		if register.Valid {
-			latestRegisterCount = register.Int
-			break
-		}
-	}
-	for j, passed = range entry.PassedTotal {
-		if passed.Valid {
-			latestPassedCount = passed.Int
-			break
-		}
-	}
-	if i != j {
-		panic("i and j should be the same")
-	}
-	return latestRegisterCount, latestPassedCount
 }
 
 func main() {
@@ -110,20 +88,6 @@ func main() {
 				id += 1
 			}
 			rakutanEntryMap[key] = entry
-		}
-	}
-
-	// Judge omikuji type
-	for key, entry := range rakutanEntryMap {
-		latestRegisterCount, latestPassedCount := getLatestTotalCount(entry)
-		//fmt.Printf("%s: %d, %d\n", entry.LectureName, latestRegisterCount, latestPassedCount)
-		if float64(latestRegisterCount)*0.76 <= float64(latestPassedCount) &&
-			latestRegisterCount > 12 && entry.FacultyName == "国際高等教育院" {
-			fmt.Printf("%s: %d, %d\n", entry.LectureName, latestRegisterCount, latestPassedCount)
-			rakutanEntryMap[key].Omikuji = models.Rakutan
-		}
-		if float64(latestRegisterCount)*0.31 >= float64(latestPassedCount) && latestRegisterCount > 4 {
-			rakutanEntryMap[key].Omikuji = models.Onitan
 		}
 	}
 
