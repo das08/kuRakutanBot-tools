@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/goccy/go-json"
+	"strconv"
+	"strings"
 )
 
 type RakutanPDF struct {
@@ -24,6 +26,39 @@ type RakutanEntry struct {
 	RegisterTotal []NullInt `json:"register_total"`
 	PassedTotal   []NullInt `json:"passed_total"`
 	KakomonURL    string    `json:"kakomon_url"`
+}
+
+func Join(a []NullInt) string {
+	var b []string
+	for _, v := range a {
+		if v.Valid {
+			b = append(b, strconv.Itoa(v.Int))
+		} else {
+			b = append(b, "NULL")
+		}
+	}
+	return "{" + strings.Join(b, ",") + "}"
+}
+
+func (r *RakutanEntry) ToRakutanCSV() RakutanCSV {
+	rakutanCSV := RakutanCSV{
+		ID:                 r.ID,
+		FacultyName:        r.FacultyName,
+		LectureName:        r.LectureName,
+		RegisterTotalArray: Join(r.RegisterTotal),
+		PassedTotalArray:   Join(r.PassedTotal),
+		KakomonURL:         r.KakomonURL,
+	}
+	return rakutanCSV
+}
+
+type RakutanCSV struct {
+	ID                 int    `csv:"id"`
+	FacultyName        string `csv:"faculty_name"`
+	LectureName        string `csv:"lecture_name"`
+	RegisterTotalArray string `csv:"register"`
+	PassedTotalArray   string `csv:"passed"`
+	KakomonURL         string `csv:"-"`
 }
 
 var nullLiteral = []byte("null")

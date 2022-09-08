@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/das08/kuRakutanBot-tools/models"
+	"github.com/gocarina/gocsv"
 	"github.com/goccy/go-json"
 	"io/ioutil"
+	"os"
+	"sort"
 )
 
 // YEAR MUST BE IN DESCENDING ORDER
@@ -60,8 +63,14 @@ func updateEntryTotal(entry *models.RakutanEntry, year int, r models.RakutanPDF)
 	}
 }
 
+func saveToCSV(rakutanCSVs []models.RakutanCSV) {
+	file, _ := os.OpenFile(fmt.Sprintf("export/%d.csv", BaseYear), os.O_RDWR|os.O_CREATE, os.ModePerm)
+	defer file.Close()
+	gocsv.MarshalFile(rakutanCSVs, file)
+}
+
 func main() {
-	//var rakutanEntries []models.RakutanEntry
+	var rakutanCSVs []models.RakutanCSV
 	rakutanPDFs := readJSON()
 
 	// Merge rakutanPDFs into rakutanEntries
@@ -92,11 +101,20 @@ func main() {
 	}
 
 	fmt.Println(len(rakutanEntryMap))
-	fmt.Println(*rakutanEntryMap["国際高等教育院:線形代数学A"])
+
 	for _, entry := range rakutanEntryMap {
-		if entry.ID > 50000 {
-			fmt.Println(entry)
-		}
+		rakutanCSVs = append(rakutanCSVs, entry.ToRakutanCSV())
 	}
+	// sort rakutanEntries by ID
+	sort.Slice(rakutanCSVs, func(i, j int) bool {
+		return rakutanCSVs[i].ID < rakutanCSVs[j].ID
+	})
+	saveToCSV(rakutanCSVs)
+	//fmt.Println(*rakutanEntryMap["国際高等教育院:線形代数学A"])
+	//for _, entry := range rakutanEntryMap {
+	//	if entry.ID > 50000 {
+	//		fmt.Println(entry)
+	//	}
+	//}
 
 }

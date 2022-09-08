@@ -7,3 +7,5 @@ require (
 	github.com/goccy/go-json v0.9.11
 	golang.org/x/text v0.3.7
 )
+
+require github.com/gocarina/gocsv v0.0.0-20220823132111-71f3a5cb2654 // indirect
