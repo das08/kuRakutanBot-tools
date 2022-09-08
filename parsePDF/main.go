@@ -35,7 +35,7 @@ func main() {
 }
 
 func isFacultyName(text pdf.Text) bool {
-	return text.X >= 19.500 && text.X <= 20.0
+	return text.X >= 19.0 && text.X <= 35.0
 }
 
 func isLectureName(text pdf.Text) bool {
@@ -78,6 +78,36 @@ func formatter(text string) string {
 	return text
 }
 
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func validator(rakutanPDF models.RakutanPDF) bool {
+	var validFacultyName = []string{"文学部", "教育学部", "法学部", "経済学部", "理学部", "医学部",
+		"医学部(人間健康科学科)", "薬学部", "工学部", "農学部", "総合人間学部", "文学研究科", "教育学研究科",
+		"法学研究科", "経済学研究科", "理学研究科", "医学研究科", "医学研究科(人間健康科学系専攻", "薬学研究科",
+		"工学研究科", "農学研究科", "人間・環境学研究科", "エネルギー科学研究科", "アジア・アフリカ地域研究研究科",
+		"情報学研究科", "生命科学研究科", "地球環境学舎", "公共政策教育部", "経営管理教育部", "法学研究科(法科大学院)",
+		"総合生存学館", "国際高等教育院",
+	}
+	if rakutanPDF.FacultyName == "" || rakutanPDF.LectureName == "" {
+		return false
+	}
+	if len(rakutanPDF.FacultyName) > 100 {
+		return false
+	}
+	if ok := contains(validFacultyName, rakutanPDF.FacultyName); !ok {
+		fmt.Println("Invalid FacultyName:", len(rakutanPDF.FacultyName))
+		return false
+	}
+	return true
+}
+
 func readPdf2(path string) ([]models.RakutanPDF, error) {
 	f, r, err := pdf.Open(path)
 	defer f.Close()
@@ -94,22 +124,22 @@ func readPdf2(path string) ([]models.RakutanPDF, error) {
 			continue
 		}
 
-		rakutanInfo := models.RakutanPDF{}
+		rakutanPDF := models.RakutanPDF{}
 		var _facultyName, _lectureName, _regStr, _passStr string
-		var ok bool
+		var isEnd bool
 
 		texts := p.Content().Text
 		for _, text := range texts {
-			_facultyName, _ = getText(isFacultyName, text, _facultyName, &rakutanInfo.Faculty)
-			_lectureName, _ = getText(isLectureName, text, _lectureName, &rakutanInfo.LectureName)
-			_regStr, _ = getText(isRegisterTotal, text, _regStr, &rakutanInfo.RegisterTotal)
-			_passStr, ok = getText(isPassedTotal, text, _passStr, &rakutanInfo.PassedTotal)
+			_facultyName, _ = getText(isFacultyName, text, _facultyName, &rakutanPDF.FacultyName)
+			_lectureName, _ = getText(isLectureName, text, _lectureName, &rakutanPDF.LectureName)
+			_regStr, _ = getText(isRegisterTotal, text, _regStr, &rakutanPDF.RegisterTotal)
+			_passStr, isEnd = getText(isPassedTotal, text, _passStr, &rakutanPDF.PassedTotal)
 
-			// If the text is the last one of the sentence, append rakutanInfo to rakutanInfos
-			// and reset rakutanInfo
-			if ok && _passStr == "" && (rakutanInfo.Faculty != "" && rakutanInfo.LectureName != "") {
-				rakutanInfos = append(rakutanInfos, rakutanInfo)
-				rakutanInfo = models.RakutanPDF{}
+			// Validate and append
+			ok := validator(rakutanPDF)
+			if isEnd && _passStr == "" && ok {
+				rakutanInfos = append(rakutanInfos, rakutanPDF)
+				rakutanPDF = models.RakutanPDF{}
 			}
 		}
 	}

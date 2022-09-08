@@ -7,14 +7,14 @@ import (
 )
 
 type RakutanPDF struct {
-	Faculty       string `json:"faculty"`
+	FacultyName   string `json:"faculty_name"`
 	LectureName   string `json:"lecture_name"`
 	RegisterTotal int    `json:"register_total"`
 	PassedTotal   int    `json:"passed_total"`
 }
 
 func (r *RakutanPDF) Print() {
-	fmt.Printf("FN: %s, LN: %s, RT: %d, PT: %d \n", r.Faculty, r.LectureName, r.RegisterTotal, r.PassedTotal)
+	fmt.Printf("FN: %s, LN: %s, RT: %d, PT: %d \n", r.FacultyName, r.LectureName, r.RegisterTotal, r.PassedTotal)
 }
 
 type RakutanEntry struct {

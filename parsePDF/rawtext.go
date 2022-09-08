@@ -25,7 +25,7 @@ func readPdfRaw(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	totalPage := 150
+	totalPage := 94
 
 	for pageIndex := totalPage; pageIndex <= totalPage; pageIndex++ {
 		p := r.Page(pageIndex)

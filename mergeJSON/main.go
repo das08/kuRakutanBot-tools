@@ -8,7 +8,7 @@ import (
 )
 
 // YEAR MUST BE IN DESCENDING ORDER
-var YEAR = []int{2021, 2020, 2019, 2018}
+var YEAR = []int{2021, 2020, 2019, 2018, 2017}
 
 var id = InitialId
 
@@ -72,7 +72,7 @@ func main() {
 		for _, r := range rakutanPDFs[year] {
 			// Key is a combination of faculty name and lecture name since there are multiple entries
 			// for the same lecture with different faculty name
-			key := fmt.Sprintf("%s:%s", r.Faculty, r.LectureName)
+			key := fmt.Sprintf("%s:%s", r.FacultyName, r.LectureName)
 
 			var entry *models.RakutanEntry
 			// If the key is already in the map, accumulate the register and passed total
@@ -81,7 +81,7 @@ func main() {
 				updateEntryTotal(entry, year, r)
 			} else {
 				entry = initialize()
-				entry.FacultyName = r.Faculty
+				entry.FacultyName = r.FacultyName
 				entry.LectureName = r.LectureName
 				entry.RegisterTotal[BaseYear-year] = models.NullInt{Int: r.RegisterTotal, Valid: true}
 				entry.PassedTotal[BaseYear-year] = models.NullInt{Int: r.PassedTotal, Valid: true}
@@ -93,10 +93,10 @@ func main() {
 
 	fmt.Println(len(rakutanEntryMap))
 	fmt.Println(*rakutanEntryMap["国際高等教育院:線形代数学A"])
-	//for _, entry := range rakutanEntryMap {
-	//	if entry.ID > 40000 {
-	//		fmt.Println(entry)
-	//	}
-	//}
+	for _, entry := range rakutanEntryMap {
+		if entry.ID > 50000 {
+			fmt.Println(entry)
+		}
+	}
 
 }
