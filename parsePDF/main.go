@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var YEAR = []int{2018, 2019, 2020, 2021}
+var YEAR = []int{2017, 2018, 2019, 2020, 2021}
 
 func main() {
 	start := time.Now()
@@ -107,7 +107,7 @@ func readPdf2(path string) ([]models.RakutanPDF, error) {
 
 			// If the text is the last one of the sentence, append rakutanInfo to rakutanInfos
 			// and reset rakutanInfo
-			if ok && _passStr == "" && (rakutanInfo.Faculty != "" || rakutanInfo.LectureName != "") {
+			if ok && _passStr == "" && (rakutanInfo.Faculty != "" && rakutanInfo.LectureName != "") {
 				rakutanInfos = append(rakutanInfos, rakutanInfo)
 				rakutanInfo = models.RakutanPDF{}
 			}
