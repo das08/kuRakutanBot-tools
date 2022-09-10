@@ -35,7 +35,7 @@ export default function () {
         }
     };
     group("/xxxxx/xxxxx", () => {
-        const response = http.post('http://host.docker.internal:8081/callback', body, authParams);
+        const response = http.post('http://rakutan-app:8081/callback', body, authParams);
         check(response, {
             'is status 200': (r) => r.status === 200,
         });
