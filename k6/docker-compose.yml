@@ -15,6 +15,8 @@ services:
       - "8086:8086"
     environment:
       - INFLUXDB_DB=k6
+    volumes:
+      - influx:/var/lib/influxdb
 
   grafana:
     image: grafana/grafana:latest
@@ -29,6 +31,7 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
     volumes:
       - ./grafana:/etc/grafana/provisioning/
+      - grafana:/var/lib/grafana
 
   k6:
     image: grafana/k6:latest
@@ -101,5 +104,7 @@ services:
 
 
 volumes:
+  influx:
+  grafana:
   postgres:
   redis:
