@@ -35,7 +35,7 @@ services:
     ports:
       - "6565:6565"
     environment:
-      - K6_OUT=influxdb=http://influxdb:8086/k6
+      - K6_OUT=influxdb=http://k6-influxdb-1:8086/k6
     volumes:
       - ./scenario:/scenario
 
