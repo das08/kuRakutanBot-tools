@@ -6,5 +6,5 @@ datasources:
     access: proxy
     database: k6
     orgId: 1
-    url: http://influxdb:8086
+    url: http://k6-influxdb-1:8086
     isDefault: true
