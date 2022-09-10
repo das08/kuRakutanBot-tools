@@ -3,6 +3,7 @@ version: '3.4'
 networks:
   k6:
   grafana:
+  rakutan:
 
 services:
   influxdb:
@@ -19,6 +20,7 @@ services:
     image: grafana/grafana:latest
     networks:
       - grafana
+      - rakutan
     ports:
       - "3000:3000"
     environment:
@@ -32,6 +34,7 @@ services:
     image: grafana/k6:latest
     networks:
       - k6
+      - rakutan
     ports:
       - "6565:6565"
     environment:
@@ -41,6 +44,8 @@ services:
 
   app:
     container_name: rakutan-app
+    networks:
+      - rakutan
     build:
       context: ../kuRakutanBot-go/src/app
       dockerfile: Dockerfile
@@ -56,6 +61,8 @@ services:
 
   postgres:
     container_name: rakutan-db
+    networks:
+      - rakutan
     build:
       context: ../kuRakutanBot-go/db
       dockerfile: Dockerfile
@@ -71,6 +78,8 @@ services:
   redis:
     image: redis:6.2.6
     container_name: rakutan-redis
+    networks:
+      - rakutan
     restart: always
     command: redis-server --appendonly yes
     volumes:
@@ -80,6 +89,8 @@ services:
 
   kuwiki-mock:
     container_name: kuwiki-mock
+    networks:
+      - rakutan
     build:
       context: ../ku-rakutanbot-external-api-mock
       dockerfile: Dockerfile
