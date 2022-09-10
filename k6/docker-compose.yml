@@ -1,8 +1,94 @@
-version: '3.7'
-services:
+version: '3.4'
+
+networks:
   k6:
-    image: loadimpact/k6:latest
-    command: run
-    network_mode: "host"
+  grafana:
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    networks:
+      - k6
+      - grafana
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=k6
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/
+
+  k6:
+    image: grafana/k6:latest
+    networks:
+      - k6
+    ports:
+      - "6565:6565"
+    environment:
+      - K6_OUT=influxdb=http://influxdb:8086/k6
     volumes:
       - ./scenario:/scenario
+
+  app:
+    container_name: rakutan-app
+    build:
+      context: ../kuRakutanBot-go/src/app
+      dockerfile: Dockerfile
+    restart: always
+    tty: true
+    volumes:
+      - ../kuRakutanBot-go/src/app:/usr/src/app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8081:8081"
+
+  postgres:
+    container_name: rakutan-db
+    build:
+      context: ../kuRakutanBot-go/db
+      dockerfile: Dockerfile
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ../kuRakutanBot-go/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+
+  redis:
+    image: redis:6.2.6
+    container_name: rakutan-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis:/data
+    ports:
+      - "6379:6379"
+
+  kuwiki-mock:
+    container_name: kuwiki-mock
+    build:
+      context: ../ku-rakutanbot-external-api-mock
+      dockerfile: Dockerfile
+    restart: always
+    tty: true
+    ports:
+      - "8000:8000"
+
+
+volumes:
+  postgres:
+  redis:
