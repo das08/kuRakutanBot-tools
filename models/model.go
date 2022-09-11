@@ -61,6 +61,13 @@ type RakutanCSV struct {
 	KakomonURL         string `csv:"-"`
 }
 
+type UserDataCSV struct {
+	UID          string `csv:"uid"`
+	IsVerified   string `csv:"is_verified"`
+	RegisteredAt string `csv:"registered_at"`
+	VerifiedAt   string `csv:"verified_at"`
+}
+
 var nullLiteral = []byte("null")
 
 type NullInt struct {
