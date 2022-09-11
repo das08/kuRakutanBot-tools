@@ -68,6 +68,12 @@ type UserDataCSV struct {
 	VerifiedAt   string `csv:"verified_at"`
 }
 
+type UserFavoritesCSV struct {
+	UID       string `csv:"uid"`
+	ID        int    `csv:"id"`
+	CreatedAt string `csv:"created_at"`
+}
+
 var nullLiteral = []byte("null")
 
 type NullInt struct {
