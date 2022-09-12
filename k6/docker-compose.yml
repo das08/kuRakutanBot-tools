@@ -2,109 +2,16 @@ version: '3.4'
 
 networks:
   k6:
-  grafana:
-  rakutan:
 
 services:
-  influxdb:
-    image: influxdb:1.8
-    networks:
-      - k6
-      - grafana
-    ports:
-      - "8086:8086"
-    environment:
-      - INFLUXDB_DB=k6
-    volumes:
-      - influx:/var/lib/influxdb
-
-  grafana:
-    image: grafana/grafana:latest
-    networks:
-      - grafana
-      - rakutan
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_BASIC_ENABLED=false
-    volumes:
-      - ./grafana:/etc/grafana/provisioning/
-      - grafana:/var/lib/grafana
-
   k6:
     image: grafana/k6:latest
     networks:
       - k6
-      - rakutan
     ports:
       - "6565:6565"
     environment:
-      - K6_OUT=influxdb=http://k6-influxdb-1:8086/k6
+      - K6_OUT=${K6_OUT:-influxdb=http://influxdb:8086/k6}
+      - RAKUTAN_BOT_API=${RAKUTAN_BOT_API:-http://localhost:8081}
     volumes:
       - ./scenario:/scenario
-
-  app:
-    container_name: rakutan-app
-    networks:
-      - rakutan
-    build:
-      context: ../kuRakutanBot-go/src/app
-      dockerfile: Dockerfile
-    restart: always
-    tty: true
-    volumes:
-      - ../kuRakutanBot-go/src/app:/usr/src/app
-    depends_on:
-      - postgres
-      - redis
-    ports:
-      - "8081:8081"
-
-  postgres:
-    container_name: rakutan-db
-    networks:
-      - rakutan
-    build:
-      context: ../kuRakutanBot-go/db
-      dockerfile: Dockerfile
-    volumes:
-      - postgres:/var/lib/postgresql/data
-      - ../kuRakutanBot-go/db/init:/docker-entrypoint-initdb.d
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-
-  redis:
-    image: redis:6.2.6
-    container_name: rakutan-redis
-    networks:
-      - rakutan
-    restart: always
-    command: redis-server --appendonly yes
-    volumes:
-      - redis:/data
-    ports:
-      - "6379:6379"
-
-  kuwiki-mock:
-    container_name: kuwiki-mock
-    networks:
-      - rakutan
-    build:
-      context: ../ku-rakutanbot-external-api-mock
-      dockerfile: Dockerfile
-    restart: always
-    tty: true
-    ports:
-      - "8000:8000"
-
-
-volumes:
-  influx:
-  grafana:
-  postgres:
-  redis:
