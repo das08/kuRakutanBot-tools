@@ -87,7 +87,15 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func validator(rakutanPDF models.RakutanPDF) bool {
+type ValidateError struct {
+	Err string
+}
+
+func (e *ValidateError) Error() string {
+	return e.Err
+}
+
+func validator(rakutanPDF models.RakutanPDF) (bool, error) {
 	var validFacultyName = []string{"文学部", "教育学部", "法学部", "経済学部", "理学部", "医学部",
 		"医学部(人間健康科学科)", "薬学部", "工学部", "農学部", "総合人間学部", "文学研究科", "教育学研究科",
 		"法学研究科", "経済学研究科", "理学研究科", "医学研究科", "医学研究科(人間健康科学系専攻", "薬学研究科",
@@ -96,16 +104,24 @@ func validator(rakutanPDF models.RakutanPDF) bool {
 		"総合生存学館", "国際高等教育院",
 	}
 	if rakutanPDF.FacultyName == "" || rakutanPDF.LectureName == "" {
-		return false
+		return false, &ValidateError{Err: "FacultyName or LectureName is empty"}
 	}
 	if len(rakutanPDF.FacultyName) > 100 {
-		return false
+		return false, &ValidateError{Err: "FacultyName is too long"}
 	}
+	if rakutanPDF.PassedTotal > rakutanPDF.RegisterTotal {
+		return false, &ValidateError{Err: "PassedTotal is bigger than RegisterTotal"}
+	}
+	if rakutanPDF.RegisterTotal == 0 {
+		return false, &ValidateError{Err: "RegisterTotal is zero"}
+	}
+
 	if ok := contains(validFacultyName, rakutanPDF.FacultyName); !ok {
-		fmt.Println("Invalid FacultyName:", len(rakutanPDF.FacultyName))
-		return false
+		//fmt.Println("Invalid FacultyName:", len(rakutanPDF.FacultyName))
+		fmt.Printf("Invalid FacultyName: %s %d\n", rakutanPDF.FacultyName, len(rakutanPDF.FacultyName))
+		return false, &ValidateError{Err: fmt.Sprintf("Invalid FacultyName: %s", rakutanPDF.FacultyName)}
 	}
-	return true
+	return true, nil
 }
 
 func readPdf2(path string) ([]models.RakutanPDF, error) {
@@ -135,16 +151,19 @@ func readPdf2(path string) ([]models.RakutanPDF, error) {
 			_regStr, _ = getText(isRegisterTotal, text, _regStr, &rakutanPDF.RegisterTotal)
 			_passStr, isEnd = getText(isPassedTotal, text, _passStr, &rakutanPDF.PassedTotal)
 
-			// Validate and append
-			ok := validator(rakutanPDF)
-			if isEnd && _passStr == "" && ok {
-				rakutanInfos = append(rakutanInfos, rakutanPDF)
-				rakutanPDF = models.RakutanPDF{}
+			if isEnd {
+				// Append to list if rakutanInfo is all set and validated
+				if ok, err := validator(rakutanPDF); ok {
+					rakutanInfos = append(rakutanInfos, rakutanPDF)
+					rakutanPDF = models.RakutanPDF{}
+				} else if err != nil {
+					fmt.Printf("Error: %s, rakutanInfo: %v\n", err.Error(), rakutanPDF)
+				}
 			}
 		}
 	}
 
-	fmt.Println("Total RakutanInfo: ", len(rakutanInfos))
+	fmt.Println("Total Entries: ", len(rakutanInfos))
 	return rakutanInfos, nil
 }
 
