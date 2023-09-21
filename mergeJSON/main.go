@@ -11,12 +11,12 @@ import (
 )
 
 // YEAR MUST BE IN DESCENDING ORDER
-var YEAR = []int{2021, 2020, 2019, 2018, 2017}
+var YEAR = []int{2022, 2021, 2020, 2019, 2018}
 
 var id = InitialId
 
 const (
-	BaseYear    = 2021
+	BaseYear    = 2022
 	InitialId   = 10001
 	IdIncrement = 10000
 )
@@ -109,6 +109,7 @@ func main() {
 	sort.Slice(rakutanCSVs, func(i, j int) bool {
 		return rakutanCSVs[i].ID < rakutanCSVs[j].ID
 	})
+
 	saveToCSV(rakutanCSVs)
 	//fmt.Println(*rakutanEntryMap["国際高等教育院:線形代数学A"])
 	//for _, entry := range rakutanEntryMap {
@@ -116,5 +117,4 @@ func main() {
 	//		fmt.Println(entry)
 	//	}
 	//}
-
 }
