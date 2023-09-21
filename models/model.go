@@ -28,7 +28,7 @@ type RakutanEntry struct {
 	KakomonURL    string    `json:"kakomon_url"`
 }
 
-func Join(a []NullInt) string {
+func Join(a []NullInt) ArrayString {
 	var b []string
 	for _, v := range a {
 		if v.Valid {
@@ -37,7 +37,8 @@ func Join(a []NullInt) string {
 			b = append(b, "NULL")
 		}
 	}
-	return "{" + strings.Join(b, ",") + "}"
+	result := "{" + strings.Join(b, ",") + "}"
+	return ArrayString(result)
 }
 
 func (r *RakutanEntry) ToRakutanCSV() RakutanCSV {
@@ -52,13 +53,21 @@ func (r *RakutanEntry) ToRakutanCSV() RakutanCSV {
 	return rakutanCSV
 }
 
+type ArrayString string
+
+func (a *ArrayString) ToArray() []string {
+	s := string(*a)
+	s = s[1 : len(s)-1]
+	return strings.Split(s, ",")
+}
+
 type RakutanCSV struct {
-	ID                 int    `csv:"id"`
-	FacultyName        string `csv:"faculty_name"`
-	LectureName        string `csv:"lecture_name"`
-	RegisterTotalArray string `csv:"register"`
-	PassedTotalArray   string `csv:"passed"`
-	KakomonURL         string `csv:"-"`
+	ID                 int         `csv:"id"`
+	FacultyName        string      `csv:"faculty_name"`
+	LectureName        string      `csv:"lecture_name"`
+	RegisterTotalArray ArrayString `csv:"register"`
+	PassedTotalArray   ArrayString `csv:"passed"`
+	KakomonURL         string      `csv:"-"`
 }
 
 type UserDataCSV struct {
