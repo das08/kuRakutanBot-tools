@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var YEAR = []int{2017, 2018, 2019, 2020, 2021}
+var YEAR = []int{2018, 2019, 2020, 2021, 2022}
 
 func main() {
 	start := time.Now()
@@ -117,8 +117,6 @@ func validator(rakutanPDF models.RakutanPDF) (bool, error) {
 	}
 
 	if ok := contains(validFacultyName, rakutanPDF.FacultyName); !ok {
-		//fmt.Println("Invalid FacultyName:", len(rakutanPDF.FacultyName))
-		fmt.Printf("Invalid FacultyName: %s %d\n", rakutanPDF.FacultyName, len(rakutanPDF.FacultyName))
 		return false, &ValidateError{Err: fmt.Sprintf("Invalid FacultyName: %s", rakutanPDF.FacultyName)}
 	}
 	return true, nil
@@ -167,12 +165,13 @@ func readPdf2(path string) ([]models.RakutanPDF, error) {
 	return rakutanInfos, nil
 }
 
-//Total RakutanInfo:  8824
+//Total Entries:  8824
 //processed year:  2018
-//Total RakutanInfo:  7248
+//Total Entries:  7248
 //processed year:  2019
-//Total RakutanInfo:  8733
+//Total Entries:  8733
 //processed year:  2020
-//Total RakutanInfo:  8704
+//Total Entries:  8704
 //processed year:  2021
-//Process Ended in: 19.644771s
+//Total Entries:  8655
+//processed year:  2022
